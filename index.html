@@ -908,6 +908,11 @@ function addCustom(name,pos,isMine){
 
 /* replacement level = the startable player you'd get off waivers */
 let FLEX_N = 2;   // ESPN league: 2 flex. Fixed -- the mock toggle was removed.
+/* Roster caps. Used by aiChoose() for the simulated opponents AND (since 8/23) by
+   your own recommendations -- previously only the AI teams were prevented from
+   rostering a 3rd TE, while your own bench list would happily suggest one. */
+const CAP={QB:2,RB:6,WR:6,TE:2,K:1,DST:1};
+
 const REPL_BY_FLEX = {
   /* ---- ESPN full-PPR replacement levels (recomputed 8/23) ----
      Carried over the Yahoo tool's positional RANKS, not its point values, since the
@@ -1005,7 +1010,15 @@ function lineup(ids){
       const p=g[pos][i];
       if(p){ total+=p.pts; used.add(p.id); } else { total+=REPL[pos]; } } };
   take('QB',1); take('RB',2); take('WR',2); take('TE',1);
-  const bench=ids.map(i=>byId[i]).filter(p=>!used.has(p.id)&&p.pos!=='QB'&&p.pts>0)
+  /* FLEX is RB/WR/TE only. This used to filter on `p.pos!=='QB' && p.pts>0`, which
+     relied on K/DST having no projection -- but in this build they do (K 142-172,
+     DST 90-131). Because the flex bar here is max(REPL.RB,REPL.WR)=184.2 and every
+     K/DST sits BELOW it, a rostered kicker or defense actively LOWERED the lineup:
+     drafting your mandatory K+DST cost -65.6, a bad DST alone -93.9. That contaminated
+     lineup() and therefore playOut(), expectedAt(), the roster grade and the sim.
+     Filter by position explicitly and never infer eligibility from points. */
+  const FLEX_OK={RB:1,WR:1,TE:1};
+  const bench=ids.map(i=>byId[i]).filter(p=>!used.has(p.id)&&FLEX_OK[p.pos]&&p.pts>0)
                  .sort((a,b)=>b.pts-a.pts);
   for(let i=0;i<FLEX_N;i++) total += bench[i] ? bench[i].pts : Math.max(REPL.RB,REPL.WR);
   return total;
@@ -1022,7 +1035,10 @@ function futurePicks(cur){
 function expectedAt(pick, ids, taken){
   const base=lineup(ids);
   const hq=ids.some(i=>byId[i].pos==='QB');
+  // K/DST are rule-picks at the final two slots and can't fill a flex, so the
+  // forward sim must never "draft" one into a future pick.
   const pool=P.filter(x=>!gone.has(x.id)&&!taken.has(x.id)&&x.pts>0
+                        &&x.pos!=='K'&&x.pos!=='DST'
                         &&!(hq&&x.pos==='QB')&&survival(x,pick)>0.03)
               .sort((a,b)=>b.vorp-a.vorp).slice(0,26);
   const scored=pool
@@ -1116,11 +1132,14 @@ function recommend(){
   const haveQB = myIds.some(i=>byId[i].pos==='QB');
   // At YOUR pick, anyone not marked drafted is genuinely available -- no ADP filter.
   // (ADP only predicts availability at FUTURE picks; see poolAt.)
+  const myCount={QB:0,RB:0,WR:0,TE:0,K:0,DST:0};
+  myIds.forEach(i=>{const p=byId[i]; if(myCount[p.pos]!==undefined) myCount[p.pos]++;});
   const cands=P.filter(p=>{
     if(gone.has(p.id)) return false;
     if(p.pts<=0) return false;
     if(p.pos==='K'||p.pos==='DST') return false;  // draft-last rule; never a mid-draft rec even though they now project
     if(haveQB && p.pos==='QB') return false;      // 2nd QB is dead weight on a 5-man bench
+    if(myCount[p.pos] >= (CAP[p.pos]||99)) return false;  // never recommend past the roster cap
     return true;
   }).sort((a,b)=>b.vorp-a.vorp).slice(0,30);
 
@@ -1157,7 +1176,9 @@ function recommend(){
                    : (myWR0 >= 2 && myRB0 < 2) ? 'RB'      // 2+ WR, still short RB -> take RB
                    : null;
     const cornered = (needRB + needWR) >= picksLeftThruR4 && (needRB + needWR) > 0
-                     && (myRB0 + myWR0) > 0;               // never on a truly empty roster
+                     && myIds.length > 0;                 // not on an empty roster, but DO fire
+                     /* was (myRB0+myWR0)>0, which meant a TE-TE or QB-TE open got zero
+                        steering at R3 -- precisely the roster that most needs it. */
     if(lopsided) needPos = lopsided;                       // e.g. 2RB 0-1WR -> take WR now
     else if(cornered){                                     // both still short, running out of room
       if(needRB > 0 && needWR > 0){
@@ -1283,7 +1304,13 @@ const Store=(()=>{
 })();
 
 function save(){ Store.set({gone:[...gone],mine:[...mine],picks:pickLog,flex:FLEX_N,
-  ghost:ghostGone, custom:P.filter(p=>p.custom).map(p=>[p.id,p.n,p.pos])}); }
+  ghost:ghostGone, custom:P.filter(p=>p.custom).map(p=>[p.id,p.n,p.pos]),
+  /* sim was previously NOT persisted: a reload mid-sim restored gone/mine/pickLog but
+     left sim===null, so the banner vanished and you were stranded in a half-drafted
+     board with no way to continue or see the AI rosters. Set is not JSON-serialisable,
+     so `taken` round-trips as an array. */
+  sim: sim ? {pick:sim.pick, taken:[...sim.taken], rosters:sim.rosters, log:sim.log, mine:sim.mine} : null
+}); }
 async function load(){
   const o=await Store.get();
   if(o){
@@ -1292,6 +1319,8 @@ async function load(){
       P.push(p); byId[id]=p; customSeq=Math.max(customSeq,id-100000+1);
     });
     gone=new Set(o.gone||[]); mine=new Set(o.mine||[]); pickLog=o.picks||[];
+    sim = o.sim ? {pick:o.sim.pick, taken:new Set(o.sim.taken||[]),
+                   rosters:o.sim.rosters||{}, log:o.sim.log||[], mine:o.sim.mine||[]} : null;
     ghostGone=o.ghost||0;
     if(o.flex) applyFlex(o.flex);
   }
@@ -1575,46 +1604,69 @@ function renderGradeOut(){
 }
 
 function benchValueHTML(list){
-  // Your starters are set, so this is a bench pick. Two things matter for a bench:
-  //  (1) raw talent (best player available -- upside / injury insurance), and
-  //  (2) keeping RB and WR bench depth balanced, because those are the positions you
-  //      actually swap in during byes/injuries and where you flex from.
-  // We score every non-K/DST/2ndQB candidate by VORP, then apply a small depth-balance
-  // nudge toward whichever of RB/WR you have FEWER of on the bench, so an even build wins
-  // ties. This replaces the old "model has no opinion" dead-end with an actual pick.
+  /* ---- BENCH PICKS ARE PRICED ON FLEX VALUE, NOT POSITIONAL VORP ----
+     This used to rank the pool on p.vorp, which is value over that POSITION's
+     replacement. That bar is correct for a player who will occupy a dedicated
+     starting slot, and badly wrong for anyone past it.
+
+     Why: you start exactly one TE. Your second TE is not competing against TE15
+     off waivers -- he is competing against your WR/RB bench for a FLEX slot, and
+     that fight is decided on raw points. But the TE replacement bar (150.6) sits
+     33.6 below the WR bar (184.2), so a TE collects a 33.6-point head start he
+     cannot actually spend. Concretely: Mark Andrews (165.4 pts) rates +14.8 VORP
+     while Kenny Gainwell (177.8 pts -- 12.4 MORE real points) rates +3.7.
+
+     Once the RB/WR pools go VORP-negative (about round 10) every player left with
+     positive VORP is a tight end -- 8 of the 11 in that band here -- so the list
+     turned into TE2, TE3, TE4 in sequence.
+
+     Fix: positional VORP is earned ONLY by dedicated starting slots (QB1, RB1-2,
+     WR1-2, TE1). Everything beyond that is priced against the single flex bar,
+     because the flex slot does not care what position you play. Note this is
+     starters ONLY -- allowing "starters + one backup" to keep positional VORP just
+     moves the same distortion one slot earlier. */
   const have={QB:0,RB:0,WR:0,TE:0};
   [...mine].forEach(i=>{const p=byId[i]; if(have[p.pos]!==undefined) have[p.pos]++;});
-  // bench counts = rostered minus what the starting lineup uses
   const starterUse={QB:1,RB:2,WR:2,TE:1};
-  // flex is filled by RB/WR/TE, count it toward whichever fills it in starters()
   starters().forEach(x=>{ if(x.lab==='FLEX'&&x.p) starterUse[x.p.pos]=(starterUse[x.p.pos]||0)+1; });
   const benchCt = pos => Math.max(0, have[pos] - (starterUse[pos]||0));
-  const rbBench=benchCt('RB'), wrBench=benchCt('WR');
+  const rbBench=benchCt('RB'), wrBench=benchCt('WR'), teBench=benchCt('TE');
   const haveQB = have.QB>0;
 
-  // score the pool: VORP is the honest "value over a replacement at this position".
-  // The depth nudge is a genuine TIE-BREAK, not an override -- it only pulls the thinner
-  // of RB/WR ahead when the talent is close (within DEPTH_NUDGE of the raw VORP leader).
-  // We never reach past a materially better player just to balance the bench; that would
-  // repeat the old forced-position mistake. Balance decides close calls, talent decides
-  // the rest.
-  const pool=P.filter(p=>!gone.has(p.id)&&p.pts>0&&p.pos!=='K'&&p.pos!=='DST'&&!(haveQB&&p.pos==='QB'));
-  const rawRanked=pool.slice().sort((a,b)=>(b.vorp-a.vorp)||(b.pts-a.pts));
+  const FLEX_BAR = Math.max(REPL.RB, REPL.WR);
+  const DEDICATED = {QB:1, RB:2, WR:2, TE:1};   // slots that earn positional VORP
+  // value this player would add: positional VORP only if he'd fill a dedicated slot
+  const flexValue = p => (have[p.pos] < (DEDICATED[p.pos]||0))
+                          ? p.pts - REPL[p.pos]
+                          : p.pts - FLEX_BAR;
+
+  /* Enforce the roster CAP on YOUR team too. It was previously read only by
+     aiChoose(), so the simulated opponents were blocked from a 3rd TE and you
+     weren't. */
+  const pool=P.filter(p=>!gone.has(p.id)&&p.pts>0&&p.pos!=='K'&&p.pos!=='DST'
+                        &&!(haveQB&&p.pos==='QB')
+                        &&have[p.pos] < (CAP[p.pos]||99));
+  if(!pool.length) return `<div class="recName">No eligible players left</div>`;
+
+  const rawRanked=pool.slice().sort((x,y)=>(flexValue(y)-flexValue(x))||(y.pts-x.pts));
   const rawBest=rawRanked[0];
-  const DEPTH_NUDGE=6; // only reshuffle within this VORP band of the leader
-  const thinner = rbBench<wrBench?'RB':(wrBench<rbBench?'WR':null);
-  // candidates statistically tied with the leader
-  const band=rawRanked.filter(p=>rawBest.vorp - p.vorp <= DEPTH_NUDGE);
+  const DEPTH_NUDGE=6;
+  /* Depth nudge is now TE-aware. It previously compared only rbBench vs wrBench,
+     so TE had no way to push back and could be stacked invisibly. A position that
+     is already at or past its dedicated slots can never be the "thinner" one. */
+  const depthCand=[['RB',rbBench],['WR',wrBench],['TE',teBench]]
+    .filter(([pos])=> have[pos] < (CAP[pos]||99) && have[pos] < (DEDICATED[pos]||0)+1)
+    .sort((x,y)=>x[1]-y[1]);
+  const thinner = (depthCand.length>1 && depthCand[0][1] < depthCand[1][1]) ? depthCand[0][0] : null;
+  const band=rawRanked.filter(p=>flexValue(rawBest) - flexValue(p) <= DEPTH_NUDGE);
   let best=rawBest, balancedPick=false;
   if(thinner){
-    const thinInBand=band.filter(p=>p.pos===thinner).sort((a,b)=>b.vorp-a.vorp)[0];
+    const thinInBand=band.filter(p=>p.pos===thinner).sort((x,y)=>flexValue(y)-flexValue(x))[0];
     if(thinInBand && thinInBand!==rawBest){ best=thinInBand; balancedPick=true; }
   }
-  // full ranking for the list: nudge the thinner position up only within the band
-  const ranked=pool.map(p=>({p, s:p.vorp + ((balancedPick||thinner) && p.pos===thinner && (rawBest.vorp-p.vorp<=DEPTH_NUDGE) ? DEPTH_NUDGE : 0)}))
-                   .sort((a,b)=>(b.s-a.s)||(b.p.pts-a.p.pts));
-  // ensure the chosen best is at the head of the displayed list
-  ranked.sort((a,b)=> (a.p===best?-1:b.p===best?1:0) || (b.s-a.s));
+  const ranked=pool.map(p=>({p, s:flexValue(p) + (thinner && p.pos===thinner && (flexValue(rawBest)-flexValue(p)<=DEPTH_NUDGE) ? DEPTH_NUDGE : 0)}))
+                   .sort((x,y)=>(y.s-x.s)||(y.p.pts-x.p.pts));
+  ranked.sort((x,y)=> (x.p===best?-1:y.p===best?1:0) || (y.s-x.s));
 
   // bye clash info (kept -- genuinely useful for a bench pick)
   const starterByes={};
@@ -2013,7 +2065,6 @@ function simMyPicks(){
   }
   return out;
 }
-const CAP={QB:2,RB:6,WR:6,TE:2,K:1,DST:1};   // real managers don't roster 8 receivers
 const MIN={QB:1,RB:2,WR:2,TE:1,K:1,DST:1};
 
 function aiChoose(team, pickNo){
