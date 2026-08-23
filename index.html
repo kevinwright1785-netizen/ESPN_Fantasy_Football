@@ -81,15 +81,11 @@ body{background:var(--bg);color:var(--ink);
 .pill{font-size:12px;font-weight:600;color:var(--ink2);background:var(--bg);
   border:1px solid var(--line);border-radius:7px;padding:5px 9px;white-space:nowrap}
 .pill.live{color:var(--green);background:var(--green-bg);border-color:transparent}
-.modeSw{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px;gap:2px}
-.modeBtn{font:inherit;font-size:11.5px;font-weight:600;background:none;border:0;color:var(--ink2);
-  border-radius:6px;padding:4px 9px;cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;line-height:1.25;white-space:nowrap}
-.modeBtn small{font-size:9.5px;font-weight:500;color:var(--ink3);letter-spacing:.02em}
-.modeBtn[aria-pressed=true]{background:var(--accent);color:#fff}
-.modeBtn[aria-pressed=true] small{color:rgba(255,255,255,.8)}
-.modeBtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media(max-width:520px){ .modeBtn small{display:none} .modeBtn{padding:6px 9px} }
+.leagueTag{display:inline-flex;align-items:baseline;gap:6px;background:var(--accent);color:#fff;
+  border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;letter-spacing:.03em;
+  white-space:nowrap}
+.leagueTag small{font-size:9.5px;font-weight:600;color:rgba(255,255,255,.85);letter-spacing:.02em}
+@media(max-width:520px){ .leagueTag small{display:none} .leagueTag{padding:5px 8px} }
 .pill.live::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
   background:var(--green);margin-right:6px;vertical-align:1px}
 
@@ -329,7 +325,7 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
 <body>
 <div class="shell">
   <nav class="side" role="tablist" aria-label="Sections">
-    <div class="sBrand"><span class="logo">D</span><span class="sBrandTxt">Draft Desk</span></div>
+    <div class="sBrand"><span class="logo">E</span><span class="sBrandTxt">Draft Desk · ESPN</span></div>
       <div class="sGroup">Workspace</div><div class="sGroupRule"></div>
       <button class="nav" data-tab="draft" role="tab" aria-selected="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="2.5" width="6" height="6" rx="1.5"/><rect x="11.5" y="2.5" width="6" height="6" rx="1.5"/><rect x="2.5" y="11.5" width="6" height="6" rx="1.5"/><rect x="11.5" y="11.5" width="6" height="6" rx="1.5"/></svg><span class="navTxt">Draft</span></button>
       <button class="nav" data-tab="board" role="tab" aria-selected="false"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 5h14M3 10h14M3 15h14"/></svg><span class="navTxt">Board</span></button>
@@ -353,10 +349,7 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
   <div class="topbar">
     <span class="pageTitle" id="pageTitle">Draft</span>
     <div class="topRight">
-      <div class="modeSw" id="modeSw" role="group" aria-label="League format">
-        <button class="modeBtn" data-flex="2">Real league<small>2 flex</small></button>
-        <button class="modeBtn" data-flex="1">Yahoo mock<small>1 flex</small></button>
-      </div>
+      <span class="leagueTag" title="ESPN — Sparkling Wiggles · 12 team · full PPR · 2 flex">ESPN<small>Full PPR</small></span>
       <span class="pill live" id="livePill">Pick 10</span>
     </div>
   </div>
@@ -572,9 +565,9 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
             style="background:var(--accent);border-color:var(--accent);color:#fff">Grade it</button>
         </div>
         <div class="gpOr"><span>or paste a roster drafted somewhere else</span></div>
-        <div class="pSub" style="margin-bottom:10px">Grading uses the format selected in the top bar.
-        Switch to <b>Yahoo mock</b> before grading a mock — the two use different replacement levels.</div>
-        <textarea id="paste" rows="7" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Paste your Yahoo roster — the draft-results email, or the roster table from the app both work."></textarea>
+        <div class="pSub" style="margin-bottom:10px">Grading uses <b>ESPN full-PPR</b> replacement levels
+        (2 flex). Rosters from a different league or scoring format will not grade correctly here.</div>
+        <textarea id="paste" rows="7" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Paste your ESPN roster — the draft-results email, or the roster table from the app both work."></textarea>
         <div class="chips" style="margin-top:10px">
           <button class="cbtn" id="gradeBtn">Grade pasted roster</button>
           <button class="cbtn" id="clearPaste">Clear</button>
@@ -618,16 +611,22 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
 </div>
 <script>
 /* ============================================================================
-   DATASET METHODOLOGY — updated 8/22/2026
-   Blend: 50% FFToday (8/20/2026 actual half-PPR points) + 50% Yahoo (8/21/2026
-   consensus half-PPR rankings, rank-mapped onto FFToday's point curve per position).
-   ESPN/Mike Clay was REMOVED as a source on this date — no longer part of the blend.
-   ADP is sourced from Yahoo's overall 1-300 ranking.
-   Players in only one source use that source's value; a small tail is ADP-est-filled.
-   MANUAL_OVERRIDES (Achane 247, Henry 243) are applied AFTER the blend and kept
-   deliberately — the fresh FFToday numbers (Henry 251.6 w/ 0 rec TD, Achane 239.2)
-   independently corroborate these fades.
-   ============================================================================ */
+   DATASET METHODOLOGY — ESPN league, built 8/23/2026
+   Blend: 50% FFToday (FFToday PPR preset) + 50% ESPN 2026 projections rendered at this
+   league's own settings. 192 players; 164 carry a real two-source sd.
+   ADP: ESPN Live Draft Trends (8/23), with the tail above rank 150 reconstructed from
+   rank order out to pick 180 — ESPN averages undrafted players toward a ceiling, which
+   piled 31 players into a 3.4-pick band and flattened survival() in rounds 12-15.
+   QB CORRECTION: FFToday PPR scores QBs at 0.05/passing yard with NO interception
+   penalty (solved exactly across all 50 QBs, max deviation 0.05). This league uses
+   0.04/yard and -2/INT. FFToday QBs are rescored from component stats BEFORE sd is
+   computed — raw blending showed 64.6 pts of QB "disagreement" that was 85% scoring
+   drift, which would have made effSd roughly 6x too wide.
+   RB/WR/TE need no correction: both sources reconcile to this league's formula exactly
+   (mean residual 0.000). K and DST come from ESPN alone — FFToday's kicker and defense
+   rules differ from this league's tiered scoring.
+   Bye weeks from FFToday (the ESPN export carried none).
+*/
 const RAW = [["Jahmyr Gibbs","RB",366.1,1.5,1,1.3,6,0.27],
 ["Bijan Robinson","RB",359.9,2.5,1,7,11,0.192],
 ["Ja'Marr Chase","WR",334,4,1,3.5,6,0.198],
@@ -903,7 +902,7 @@ function addCustom(name,pos,isMine){
 }
 
 /* replacement level = the startable player you'd get off waivers */
-let FLEX_N = 2;   // your league has 2; Yahoo mocks default to 1
+let FLEX_N = 2;   // ESPN league: 2 flex. Fixed -- the mock toggle was removed.
 const REPL_BY_FLEX = {
   /* ---- ESPN full-PPR replacement levels (recomputed 8/23) ----
      Carried over the Yahoo tool's positional RANKS, not its point values, since the
@@ -1949,7 +1948,7 @@ function renderRoster(){
      statCard('Picks made', mine.size+' / 15', holes?`${holes} starting slot${holes>1?'s':''} empty`:'all slots filled', ICON.mark,'',null).replace('<span class="chip ','<span class="chip" '+CH.a+' data-x="')
    + statCard('Lineup', total.toFixed(0), (total/17).toFixed(1)+' per week', ICON.clock,'',null).replace('<span class="chip ','<span class="chip" '+CH.g+' data-x="')
    + statCard('Grade so far', L, (pct*100).toFixed(0)+'% of available value', ICON.pick,'',null).replace('<span class="chip ','<span class="chip" '+CH.m+' data-x="')
-   + statCard('Format', FLEX_N+' flex', FLEX_N===2?'your league':'Yahoo mock', ICON.next,'',null).replace('<span class="chip ','<span class="chip" '+CH.v+' data-x="');
+   + statCard('League', 'ESPN', 'full PPR · 2 flex', ICON.next,'',null).replace('<span class="chip ','<span class="chip" '+CH.v+' data-x="');
   document.getElementById('rTotal').textContent=total.toFixed(1)+' pts';
   document.getElementById('rLineSub').textContent=`Best legal lineup from what you've drafted · ${FLEX_N} flex`;
 
@@ -2237,10 +2236,6 @@ document.addEventListener('click',e=>{
       {draft:'Draft',sim:'Sim',roster:'Roster',grade:'Grade',strategy:'Strategy',board:'Board'}[t.dataset.tab];
     window.scrollTo({top:0}); return; }
   const f=e.target.closest('[data-f]'); if(f){ filterPos=f.dataset.f; renderControls(); renderBoard(); return; }
-  const fx=e.target.closest('[data-flex]');
-  if(fx){ applyFlex(+fx.dataset.flex); setFlexUI(); save(); all();
-    if(!document.getElementById('gradeOut').classList.contains('hidden')) renderGradeOut();
-    return; }
   if(e.target.id==='addMine'||e.target.id==='addGone'){
     const el=document.getElementById('cname'), nm=el.value.trim();
     if(e.target.id==='addGone'&&!nm){ ghostGone++; save(); all(); return; }
@@ -2335,18 +2330,21 @@ if(qqEl){
 }
 
 document.getElementById('assumptions').innerHTML=
- `<b>How the call is made.</b> Every projection is scored in your settings — 0.5 per reception, 4-point passing TDs, −1 interceptions, 6-point rushing and receiving TDs, 10 yards per point, −2 fumbles. For each available player it adds him to your roster, searches your next three picks exhaustively, and scores the resulting QB/RB/RB/WR/WR/TE/FLEX/FLEX lineup.
-  <br><br><b>Assumptions you can check.</b> Replacement level is QB13, RB35, WR38, TE13 — the player you'd get free off waivers. Availability at future picks uses each player's real ADP standard deviation from 1,889 half-PPR mock drafts (Aug 3–8), rescaled to Yahoo's ADP means.
-  <br><br><b>Coverage.</b> 267 players — all 32 team defenses and every kicker with a real ADP. 186 carry full projections, blended across three independent sources — the FantasyPros/FFToday consensus, ESPN's Mike Clay, and Yahoo's 8/14 consensus rankings (1/3 weight). Two players (Achane, Henry) carry a manual adjustment down to consensus, flagged “manual adj” on their card; the rest — deep handcuffs and late fliers from FFToday's Top 225 — came back from the blend empty. Rather than leave them invisible to the recommender, each now carries an ADP-implied estimate: the median of the nine nearest same-position players by ADP that do have a real blend. Every one of them sits at ADP 136+, so the estimate lands below replacement level and can't reach a starting slot or move your grade — it only lets them be ranked against each other in rounds 12–15. They show a <b>~</b> on the board and an <b>est</b> badge on your roster. Kickers and defenses still carry no projection by design.
-    <br><br>
-    <b>Data vintage.</b> Projections late June to mid-July; Yahoo ADP 7/30. Camp news after those dates is not reflected. Ricky Pearsall removed 8/9 (out for season).`;
+ `<b>How the call is made.</b> Every projection is scored in this league's settings — 1.0 per reception, 4-point passing TDs, \u22122 interceptions, 6-point rushing and receiving TDs, 10 yards per point, \u22122 fumbles. For each available player it adds him to your roster, searches your next three picks exhaustively, and scores the resulting QB/RB/RB/WR/WR/TE/FLEX/FLEX lineup.
+  <br><br><b>Assumptions you can check.</b> Replacement level \u2014 the player you'd get free off waivers \u2014 is QB17 (276.9), RB33 (174.1), WR35 (184.2), TE15 (150.6). These are recomputed for full PPR and are much higher than a half-PPR league's: a point per catch lifts every pass-catcher, so the bar to beat is higher too. Availability at future picks uses each player's ADP with the spread inflated 2.2\u00d7, because raw source-disagreement is far tighter than a real draft room.
+  <br><br><b>Coverage.</b> 192 players. 164 carry a genuine two-source blend \u2014 FFToday's PPR projections and ESPN's own 2026 projections rendered at this league's settings \u2014 and the gap between those two sources is what drives the availability model. The remaining 28 appear in only one source and fall back to an ADP-scaled spread. Kickers and defenses come from ESPN alone, since FFToday's scoring rules for those positions don't match this league's tiered points-allowed and yards-allowed.
+  <br><br><b>What this league changes.</b> Full PPR moves receivers and tight ends up relative to a half-PPR league, and the \u22122 interception penalty pushes quarterbacks down. On a clean board the model now takes its QB around round 7 rather than round 5. Defense scoring here is wider than it looks: an elite unit beats a streamer by about 22% more than in a half-PPR league, but that shows up in weekly streaming, not on draft day \u2014 K and DST are still last-two picks.
+  <br><br><b>Data vintage.</b> FFToday PPR and ESPN projections pulled 8/23/2026; ESPN ADP 8/23/2026. Camp news after that date is not reflected.`;
 
 renderRounds();
+/* The 1-flex Yahoo-mock toggle was removed: this file is ESPN-only, and a mis-set
+   flex silently changes every replacement level and the grade denominator. FLEX_N is
+   pinned to 2 at init and nothing in the UI can change it. */
 function setFlexUI(){
-  document.getElementById('flexBadge').textContent = FLEX_N===2?'Real league · 2 flex':'Yahoo mock · 1 flex';
-  document.querySelectorAll('[data-flex]').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.flex===FLEX_N));
+  const b=document.getElementById('flexBadge');
+  if(b) b.textContent = 'ESPN · full PPR · 2 flex';
 }
-applyFlex(2);   // your league is the default; switch to 1 only for Yahoo mocks
+applyFlex(2);   // ESPN league: 2 flex, fixed. No UI path changes this.
 setFlexUI();
 load().then(()=>{ setFlexUI(); all(); renderSim();
   const el=document.getElementById('storeMode');
