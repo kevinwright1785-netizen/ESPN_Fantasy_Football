@@ -456,14 +456,14 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
     <div class="panel" style="margin-bottom:12px">
       <div class="pHead">
         <div><div class="pTitle">The target</div>
-             <div class="pSub">What the algorithm actually builds through round 6</div></div>
-        <span class="badge b-green">RB-heavy · QB by R5</span>
+             <div class="pSub">What the algorithm actually builds through round 8</div></div>
+        <span class="badge b-green">Balanced open · QB by R7</span>
       </div>
       <div class="pBody">
         <div class="callouts">
-          <div class="co"><span class="dot"></span><div><b>What the tool does on a clean board:</b> RB, RB, RB, WR, QB, then best available. Three backs early, first receiver around round 4, quarterback in round 5. That\u2019s the algorithm following its own recommendation \u2014 not a script imposed on top of it.</div></div>
-          <div class="co"><span class="dot"></span><div><b>Composition beats order.</b> The early RB lean is because the top-RB tier decays faster than the top-WR tier, so the scarce thing goes first. Exact order barely matters; getting roughly 3\u20134 RB and 2 WR before your QB does.</div></div>
-          <div class="co"><span class="dot"></span><div><b>The QB is a round-5 pick, with one exception.</b> If Josh Allen slides to round 3, take him \u2014 he\u2019s 45 points clear of the field. Otherwise the QB4\u2013QB11 band is nearly flat and round 5 is the natural spot. Don\u2019t reach earlier for a non-Allen QB, and don\u2019t wait past round 6.</div></div>
+          <div class="co"><span class="dot"></span><div><b>What the tool does on a clean board:</b> RB, RB, WR, WR, TE, RB, QB, depth. Two backs, then the balanced-open guard forces two receivers in rounds 3\u20134, an elite tight end around round 5, and the quarterback in round 7. Measured across 40 randomized boards \u2014 the algorithm following its own recommendation, not a script imposed on top of it.</div></div>
+          <div class="co"><span class="dot"></span><div><b>Composition beats order.</b> The early RB lean is because the top-RB tier decays faster than the top-WR tier, so the scarce thing goes first. Exact order barely matters; leaving round 4 with two backs and two receivers does. In full PPR a third early RB is worth far less than it looks \u2014 he ends up on your bench.</div></div>
+          <div class="co"><span class="dot"></span><div><b>The QB is a round-7 pick here, with one exception.</b> If Josh Allen slides, take him \u2014 he\u2019s 46 points clear of QB2. Otherwise the QB2\u2013QB8 band spans only 25 points and round 7 is the natural spot. This is later than a half-PPR league: the \u22122 interception penalty suppresses every quarterback, and full PPR raises the receiver you\u2019d be giving up. Don\u2019t reach earlier for a non-Allen QB.</div></div>
         </div>
       </div>
     </div>
@@ -856,7 +856,12 @@ const NICK={'Arizona':'cardinals','Atlanta':'falcons','Baltimore':'ravens','Buff
 'New Orleans':'saints','NY Giants':'giants','NY Jets':'jets','Philadelphia':'eagles',
 'Pittsburgh':'steelers','Seattle':'seahawks','San Francisco':'49ers niners','Tampa Bay':'buccaneers bucs',
 'Tennessee':'titans','Washington':'commanders'};
-const MANUAL_OVERRIDES = {"De'Von Achane":"Held to RB11 consensus \u2014 receiving regression risk with Willis at QB","Derrick Henry":"Held to RB12 consensus \u2014 age 32, TD-dependent"};
+/* Carried over empty from the Yahoo build. Those two entries (Achane "held to RB11",
+   Henry "held to RB12") described adjustments applied to the HALF-PPR blend and were
+   never applied here -- in this dataset Achane is RB5 and Henry is RB11 on unadjusted
+   numbers, so the labels would have annotated values that no manual fade touched.
+   Add entries here only alongside an actual change to the projection. */
+const MANUAL_OVERRIDES = {};
 const P = RAW.map((r,i)=>({id:i,n:r[0],pos:r[1],pts:r[2],adp:r[3],consensus:!!r[4],
                            sd:r[5]||Math.max(1,0.118*r[3]), bye:r[6]||0, tdShare:r[7]||0, override:MANUAL_OVERRIDES[r[0]]||null}));
 P.forEach(p=>{ p.alt = p.pos==='DST' ? (NICK[p.n.replace(' Defense','')]||'') : ''; });
@@ -1401,7 +1406,7 @@ function starters(){
   for(let i=0;i<FLEX_N;i++){const p=b[i];out.push({lab:'FLEX',p,pts:p?p.pts:Math.max(REPL.RB,REPL.WR),empty:!p});}
   return out;
 }
-/* ---------- paste a Yahoo roster, match it to the dataset ---------- */
+/* ---------- paste an ESPN roster, match it to the dataset ---------- */
 const SUFFIX=new Set(['jr','sr','ii','iii','iv','v']);
 function nameKeys(full){
   let parts=full.toLowerCase().replace(/[.'’]/g,'').split(/\s+/).filter(Boolean);
@@ -1735,17 +1740,17 @@ function renderRec(){
 }
 
 const ROUNDS=[
- [1,MY_PICKS[0],'Best RB or WR','Edge at the top is 125\u2013187 points, bigger than anything later. No QB, no TE \u2014 the algorithm never takes one this early.'],
- [2,MY_PICKS[1],'Best RB or WR','Same logic. On a clean board the tool takes running backs at 10, 15 and 34, because the top-RB tier drops off faster than the top-WR tier.'],
- [3,MY_PICKS[2],'RB \u2014 unless Allen slid','Still RB-weighted (the RB15\u2013RB25 band is underpriced). The one override: if Josh Allen falls to you here, the tool takes him. He\u2019s 45 points clear of the next QB, and it\u2019s the only time a QB beats a skill pick this early. Tested: it does grab him.'],
- [4,MY_PICKS[3],'First WR','The tool takes its first receiver around here. If you opened RB-RB-RB, this is where the board balances.'],
- [5,MY_PICKS[4],'Quarterback','This is where the algorithm actually drafts a QB on a clean board \u2014 Maye, Daniels, Hurts and Burrow all sit in the high-50s and project within a few points of each other. Not \u201cwait forever\u201d and not \u201conly Allen\u201d \u2014 round 5 is the QB round unless you already grabbed Allen.'],
- [6,MY_PICKS[5],'Best available','With QB and your core skill spots handled, take the best player left \u2014 usually another RB (2-flex) or WR (1-flex). The tool does not chase a second QB.'],
- [7,MY_PICKS[6],'Tight end','TE5 through TE10 differ by ~4 points total, so this is the buy window \u2014 not round 2. Watch Mark Andrews (ADP 119); one source has him as the top TE target.'],
- [8,MY_PICKS[7],'WR3 / depth','Last pick that still moves your starting lineup. After this, edge reads 0.0.'],
- ['9\u201313',MY_PICKS[8]+'+','Upside and handcuffs','Every edge reads 0.0 \u2014 nothing left changes your starters. The card switches to \u201cno opinion\u201d mode here and shows your thinnest positions instead. Your call.'],
+ [1,MY_PICKS[0],'Best RB or WR','The biggest edge on the board \u2014 the top pick beats the runner-up by about 30 points of starting lineup, more than any later round. Measured over 40 boards it takes an RB 58% of the time and a WR 43%. Never a QB or TE here.'],
+ [2,MY_PICKS[1],'Best RB or WR','Almost always a running back (88% of boards). The elite-RB tier runs out faster than the WR tier, so this is where the model spends its second premium pick. The gap to the next-best option has already narrowed to ~7 points.'],
+ [3,MY_PICKS[2],'Wide receiver','The balanced-open guard fires here. If you hold two RBs and fewer than two WRs it steers to WR (75% of boards) unless a genuinely elite player at another position fell. Measured: the 2RB-2WR open buys +243 points of WR at zero RB cost \u2014 the third back was heading to your bench anyway.'],
+ [4,MY_PICKS[3],'Wide receiver','Second half of the guard. You should leave round 4 with two backs and two receivers. Note the edge over the #2 option is essentially zero by now \u2014 this is a structural pick, not a value pick, and reasonable people could take either name.'],
+ [5,MY_PICKS[4],'Tight end (or QB)','TE 73% / QB 23%. Bowers and McBride are a real tier of two \u2014 45 points clear of TE3 \u2014 and in full PPR that gap is worth reaching for. If both are gone this usually becomes the QB pick instead.'],
+ [6,MY_PICKS[5],'Best available','Core spots are filled, so take the best player left \u2014 most often a third RB for the flex (63%). The model does not chase a second QB.'],
+ [7,MY_PICKS[6],'Quarterback','This is the QB round in this league (65% of boards), later than a half-PPR build would suggest. Two reasons: the \u22122 interception penalty suppresses the whole position, and full PPR raises the WR/TE bar you would give up. Josh Allen is the one exception \u2014 he is 46 points clear of QB2, and if he somehow slides the model grabs him far earlier.'],
+ [8,MY_PICKS[7],'Depth / flex','Last pick that still moves your starting lineup. The edge over the next option is under a point, so trust your own read here.'],
+ ['9\u201315',MY_PICKS[8]+'+','No opinion \u2014 your call','From here the spread between the best and worst candidate is exactly 0.0: nothing left changes your starters. The card switches to \u201cno opinion\u201d mode and shows your thinnest positions instead. Take upside, handcuff your RB1, or stash a bye-week fill.'],
  [14,LAST_TWO[0],'Kicker','Available every year. Costs nothing here.'],
- [15,LAST_TWO[1],'Defense','Stream matchups all season. This league scores \u22123 for 35\u201345 and \u22125 for 46+ allowed, plus tiered yards-allowed \u2014 which rewards streaming a mediocre defense into a bad offense more than it rewards rostering a good one.']];
+ [15,LAST_TWO[1],'Defense','Stream matchups all season. This league scores \u22123 for 35\u201345 and \u22125 for 46+ allowed, plus tiered yards-allowed \u2014 which rewards streaming a mediocre defense into a bad offense more than rostering a good one.']];
 function renderRounds(){
   document.getElementById('rounds').innerHTML=ROUNDS.map(([r,pk,what,why])=>`
     <div class="rd"><div class="rdNo"><span class="rdTag">Pick ${pk}</span><span class="rdPick">Round ${r}</span></div>
