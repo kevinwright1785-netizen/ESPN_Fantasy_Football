@@ -457,13 +457,13 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
       <div class="pHead">
         <div><div class="pTitle">The target</div>
              <div class="pSub">What the algorithm actually builds through round 8</div></div>
-        <span class="badge b-green">Balanced open · QB by R7</span>
+        <span class="badge b-green">Seat 2 · RB, RB, TE, WR, QB</span>
       </div>
       <div class="pBody">
         <div class="callouts">
-          <div class="co"><span class="dot"></span><div><b>What the tool does on a clean board:</b> RB, RB, WR, WR, TE, RB, QB, depth. Two backs, then the balanced-open guard forces two receivers in rounds 3\u20134, an elite tight end around round 5, and the quarterback in round 7. Measured across 40 randomized boards \u2014 the algorithm following its own recommendation, not a script imposed on top of it.</div></div>
-          <div class="co"><span class="dot"></span><div><b>Composition beats order.</b> The early RB lean is because the top-RB tier decays faster than the top-WR tier, so the scarce thing goes first. Exact order barely matters; leaving round 4 with two backs and two receivers does. In full PPR a third early RB is worth far less than it looks \u2014 he ends up on your bench.</div></div>
-          <div class="co"><span class="dot"></span><div><b>The QB is a round-7 pick here, with one exception.</b> If Josh Allen slides, take him \u2014 he\u2019s 46 points clear of QB2. Otherwise the QB2\u2013QB8 band spans only 25 points and round 7 is the natural spot. This is later than a half-PPR league: the \u22122 interception penalty suppresses every quarterback, and full PPR raises the receiver you\u2019d be giving up. Don\u2019t reach earlier for a non-Allen QB.</div></div>
+          <div class="co"><span class="dot"></span><div><b>What the tool does from seat 2:</b> RB, RB, TE, WR, QB, then WR/RB depth. Gibbs at 2 (Bijan if Gibbs goes first), a second back at 23, the elite tight end at 26, a receiver at 47 when the balanced-open guard fires, and the quarterback at 50. Measured across 40 randomized boards on the 9/4 data \u2014 the algorithm following its own recommendation, not a script imposed on top of it. Seat 10 built RB-RB-WR-WR-TE-RB-QB; the seat moved the TE up three rounds and the QB up two.</div></div>
+          <div class="co"><span class="dot"></span><div><b>Why the tight end jumps to round 3.</b> Picks 23 and 26 land exactly on Bowers (ADP 23.9) and McBride (23.0), a tier of two that sits 45 points clear of TE3. That is the elite-faller hatch in the balanced-open guard doing its job. With the hatch switched off on the same 40 boards the tool builds RB-RB-WR-WR and finishes about 10 points of starting lineup worse: it gains ~36 at WR1+WR2 and gives back ~30 at TE plus ~9 at QB. Take the tight end; the guard still gets you a receiver at 47.</div></div>
+          <div class="co"><span class="dot"></span><div><b>The QB is a round-5 pick from this seat, with one exception.</b> If Josh Allen slides to 23 or 26, take him \u2014 he is 48 points clear of QB2. Otherwise QB2\u2013QB8 spans only 24 points, and pick 50 is where the tool takes one (75% of boards, Maye most often) because the 21-pick wait to 71 is the longest gap in your draft and the band empties in it. Do not reach earlier for a non-Allen QB, and do not let him slide past 50 unless a clear tier of RB or WR is still on the board.</div></div>
         </div>
       </div>
     </div>
@@ -611,11 +611,12 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
 </div>
 <script>
 /* ============================================================================
-   DATASET METHODOLOGY — ESPN league, built 8/23/2026
-   Blend: 50% FFToday (FFToday PPR preset) + 50% ESPN 2026 projections rendered at this
-   league's own settings. 192 players; 164 carry a real two-source sd.
-   ADP: ESPN Live Draft Trends (8/23), with the tail above rank 150 reconstructed from
-   rank order out to pick 180 — ESPN averages undrafted players toward a ceiling, which
+   DATASET METHODOLOGY — ESPN league, built 8/23/2026, refreshed 9/4/2026
+   Blend: 50% FFToday (9/3 component stats, scored to this league's rules) + 50% ESPN 2026
+   projections rendered at this league's own settings (9/4). 217 players; 178 carry a real
+   two-source sd. Dataset = every ESPN Live Draft Trends row (250, 9/4) with a live ESPN projection.
+   ADP: ESPN Live Draft Trends (9/4, 250 rows), with the tail above rank 150 reconstructed from
+   rank order (rank 200 = pick 180, same slope beyond) — ESPN averages undrafted players toward a ceiling, which
    piled 31 players into a 3.4-pick band and flattened survival() in rounds 12-15.
    QB CORRECTION: FFToday PPR scores QBs at 0.05/passing yard with NO interception
    penalty (solved exactly across all 50 QBs, max deviation 0.05). This league uses
@@ -627,198 +628,223 @@ input[type=search]:focus{outline:2px solid var(--accent);outline-offset:-1px;bor
    rules differ from this league's tiered scoring.
    Bye weeks from FFToday (the ESPN export carried none).
 */
-const RAW = [["Jahmyr Gibbs","RB",366.1,1.5,1,1.3,6,0.27],
-["Bijan Robinson","RB",359.9,2.5,1,7,11,0.192],
-["Ja'Marr Chase","WR",334,4,1,3.5,6,0.198],
-["Puka Nacua","WR",347.8,5,1,8.5,11,0.181],
-["Jaxon Smith-Njigba","WR",317.4,5.8,1,9.3,11,0.161],
-["Christian McCaffrey","RB",344.5,7.1,1,1.3,8,0.235],
-["Jonathan Taylor","RB",301.5,7.8,1,15,13,0.259],
-["Amon-Ra St. Brown","WR",321.1,8.3,1,2.9,6,0.187],
-["CeeDee Lamb","WR",273.1,10.7,1,20.4,14,0.187],
-["De'Von Achane","RB",280.4,12,1,13.2,6,0.182],
-["Justin Jefferson","WR",279.8,12.1,1,13.9,6,0.15],
-["James Cook","RB",277.4,12.6,1,2.2,7,0.281],
-["Saquon Barkley","RB",268,15.9,1,5.7,10,0.246],
-["Ashton Jeanty","RB",272.6,16.1,1,8.3,13,0.198],
-["Drake London","WR",271,18.7,1,1.2,11,0.155],
-["Derrick Henry","RB",267.1,19.3,1,7.5,13,0.292],
-["Trey McBride","TE",246.4,20.3,1,4.5,14,0.146],
-["Jeremiyah Love","RB",269.2,21.3,1,9.3,14,0.201],
-["Josh Allen","QB",367.9,22.1,1,1.8,7,0.478],
-["Rashee Rice","WR",260.4,22.2,1,10.7,5,0.196],
-["Kenneth Walker","RB",265.9,22.7,1,8.1,5,0.248],
-["Chase Brown","RB",268.7,23.1,1,3.4,6,0.234],
-["Brock Bowers","TE",247.4,24.1,1,6.5,13,0.17],
-["Omarion Hampton","RB",264.6,26.9,1,2.9,7,0.249],
-["A.J. Brown","WR",246.1,27.1,1,2.5,11,0.171],
-["Nico Collins","WR",244.3,27.3,1,4.7,8,0.172],
-["George Pickens","WR",232.3,30.5,1,6.2,14,0.194],
-["Chris Olave","WR",252.1,32.3,1,1.6,8,0.167],
-["Breece Hall","RB",259.9,32.7,1,14.3,13,0.208],
-["Malik Nabers","WR",238.3,34.5,1,7.7,8,0.176],
-["Josh Jacobs","RB",251.7,36.1,1,7.5,11,0.298],
-["Garrett Wilson","WR",247.7,36.4,1,2.2,13,0.121],
-["Javonte Williams","RB",246.3,36.6,1,13,14,0.292],
-["Lamar Jackson","QB",320.9,38.6,1,2,13,0.39],
-["DeVonta Smith","WR",235.2,40.7,1,4,10,0.153],
-["Zay Flowers","WR",235.7,41.2,1,3.1,13,0.153],
-["Tetairoa McMillan","WR",229.3,42,1,7.2,5,0.157],
-["Kyren Williams","RB",239.8,42.8,1,7.8,11,0.3],
-["Cam Skattebo","RB",233.9,44,1,3.5,8,0.218],
-["Colston Loveland","TE",199.9,45.1,1,6,10,0.18],
-["Travis Etienne","RB",236.5,45.5,1,9.6,8,0.19],
-["Davante Adams","WR",226.7,46.7,1,5.6,11,0.278],
-["Emeka Egbuka","WR",226.8,46.9,1,2.2,10,0.185],
-["Drake Maye","QB",322.1,47.3,1,2.8,11,0.413],
-["Tyler Warren","TE",201.3,49.1,1,9.7,13,0.164],
-["Jayden Daniels","QB",313.7,50.8,1,4.7,7,0.373],
-["Ladd McConkey","WR",214.3,51.5,1,6.7,7,0.168],
-["Jalen Hurts","QB",317.1,51.7,1,3.3,10,0.457],
-["Bucky Irving","RB",218.1,54.8,1,11,10,0.22],
-["Quinshon Judkins","RB",217.4,55,1,9,11,0.221],
-["Tee Higgins","WR",211.5,56.7,1,7.9,6,0.227],
-["Jaylen Waddle","WR",210,58.5,1,3.3,10,0.171],
-["Joe Burrow","QB",303,59.3,1,1.7,6,0.465],
-["Terry McLaurin","WR",206.7,60.9,1,12,7,0.174],
-["D.J. Moore","WR",208.3,63.7,1,1.3,7,0.187],
-["Kyle Pitts","TE",185.3,65.3,1,0.3,11,0.113],
-["Rome Odunze","WR",207.1,66,1,5.5,10,0.217],
-["D'Andre Swift","RB",217.6,66.6,1,5.9,10,0.234],
-["Jameson Williams","WR",214.7,68.4,1,6.3,6,0.196],
-["Sam LaPorta","TE",177.1,68.6,1,11.5,6,0.169],
-["David Montgomery","RB",196.3,71.7,1,3.6,8,0.245],
-["Bhayshul Tuten","RB",215.8,74.8,1,10.5,7,0.236],
-["Harold Fannin Jr.","TE",187.4,76,1,0.3,11,0.128],
-["Jaxson Dart","QB",298.8,76.4,1,1.6,8,0.405],
-["Luther Burden III","WR",203.9,77.2,1,2,10,0.162],
-["Jadarian Price","RB",189.7,78.3,1,4.4,11,0.269],
-["Carnell Tate","WR",192.1,78.5,1,10.4,9,0.141],
-["TreVeyon Henderson","RB",195.4,78.6,1,2,11,0.246],
-["Matthew Stafford","QB",289.5,80.1,1,3.7,11,0.48],
-["Courtland Sutton","WR",197.1,81.9,1,7.3,10,0.228],
-["Dak Prescott","QB",291.1,85.9,1,4.3,14,0.443],
-["Brandon Aubrey","K",171.7,86.1,1,10.2,14,0],
-["Rhamondre Stevenson","RB",197.3,86.9,1,5.6,11,0.258],
-["Houston Defense","DST",131.1,86.9,1,10.3,8,0],
-["DK Metcalf","WR",196.7,87.2,1,0.7,9,0.183],
-["Marvin Harrison Jr.","WR",193.6,88,1,0.3,14,0.17],
-["Bo Nix","QB",297.2,88.1,1,1,10,0.444],
-["Michael Pittman Jr.","WR",195.5,91.2,1,1.8,9,0.138],
-["Tucker Kraft","TE",170.1,91.9,1,10.6,11,0.159],
-["Caleb Williams","QB",290.9,92.3,1,9.2,10,0.399],
-["Trevor Lawrence","QB",289.1,93.6,1,0.8,7,0.439],
-["Mike Evans","WR",194.6,93.8,1,12,8,0.2],
-["Parker Washington","WR",180.4,96.5,1,7,7,0.166],
-["Denver Defense","DST",130.7,96.7,1,11.4,10,0],
-["Christian Watson","WR",195.1,98.2,1,10,11,0.215],
-["Travis Kelce","TE",175.8,98.3,1,1.7,5,0.154],
-["Dallas Goedert","TE",166.8,99.5,1,10.3,10,0.216],
-["George Kittle","TE",164.7,100,1,12.2,8,0.182],
-["Alec Pierce","WR",184.2,100.7,1,2.5,13,0.163],
-["Jaylen Warren","RB",196.5,100.8,1,4.8,9,0.183],
-["Brock Purdy","QB",291.8,103.8,1,0.8,8,0.435],
-["LA Rams Defense","DST",121.9,104,1,12.3,11,0],
-["Brian Thomas Jr.","WR",171.9,104.3,1,4.8,7,0.175],
-["Matthew Golden","WR",169.6,104.7,1,15.4,11,0.177],
-["Michael Wilson","WR",174.3,104.9,1,2.2,14,0.12],
-["Rico Dowdle","RB",176.3,105.9,1,9.8,9,0.221],
-["Cameron Dicker","K",161.9,106.1,1,12.5,7,0],
-["Justin Herbert","QB",287.2,107.7,1,3.6,7,0.397],
-["Patrick Mahomes","QB",288,107.9,1,3.3,5,0.424],
-["Tony Pollard","RB",191.5,108.2,1,5.7,9,0.172],
-["Seattle Defense","DST",120.8,108.4,1,12.8,11,0],
-["Jake Ferguson","TE",163,111.7,1,3.5,14,0.202],
-["Jakobi Meyers","WR",179.6,113.4,1,2.5,7,0.167],
-["Wan'Dale Robinson","WR",174.8,115.7,1,0.2,9,0.086],
-["Pittsburgh Defense","DST",125.9,116.3,1,13.7,9,0],
-["Jason Myers","K",158.5,117.3,1,13.8,11,0],
-["Jordan Addison","WR",167.2,117.7,1,3.3,6,0.179],
-["J.K. Dobbins","RB",174.1,118.7,1,0.9,10,0.276],
-["Jonathon Brooks","RB",160.2,119.4,1,10.7,5,0.187],
-["Kenny Gainwell","RB",177.8,119.5,1,14.1,0,0.236],
-["Travis Hunter","WR",99.1,120,1,14,7,0.151],
-["Chuba Hubbard","RB",175.7,121.6,1,2.8,5,0.205],
-["Mark Andrews","TE",165.4,121.9,1,3.9,13,0.254],
-["Khalil Shakir","WR",171.8,124.7,1,0.8,7,0.14],
-["Xavier Worthy","WR",170.7,128.1,1,2.6,5,0.193],
-["Isaiah Likely","TE",150.6,128.3,1,5,8,0.159],
-["Stefon Diggs","WR",166.3,128.4,1,2.3,7,0.144],
-["Kyle Monangai","RB",156.9,128.5,1,19.3,10,0.21],
-["Jayden Reed","WR",177.3,129.5,1,7.1,11,0.152],
-["Josh Downs","WR",160.2,129.9,1,2.5,13,0.131],
-["Harrison Mevis","K",159.5,131.3,1,15.5,11,0],
-["Jacory Croskey-Merritt","RB",150.3,132,1,9.2,7,0.299],
-["Baltimore Defense","DST",118.6,132.5,1,15.6,13,0],
-["Dalton Kincaid","TE",150.9,132.9,1,4.5,7,0.179],
-["T.J. Hockenson","TE",146,133.1,1,12.2,6,0.123],
-["Ka'imi Fairbairn","K",157.9,133.1,1,15.7,8,0],
-["Deebo Samuel","WR",146.3,133.3,1,14.8,8,0.185],
-["Aaron Jones","RB",162.5,134,1,14.5,6,0.166],
-["Philadelphia Defense","DST",106.8,135.5,1,16,10,0],
-["Rachaad White","RB",166.8,135.9,1,2.1,7,0.252],
-["Jared Goff","QB",279.9,138,1,11.4,6,0.447],
-["Blake Corum","RB",145.9,138.2,1,13.5,11,0.288],
-["Quentin Johnston","WR",161.1,138.4,1,4.4,7,0.223],
-["Cam Little","K",146.9,138.7,1,16.4,7,0],
-["RJ Harvey","RB",149.7,139.5,1,0.2,10,0.24],
-["Jordan Mason","RB",140.9,142.2,1,9.6,6,0.234],
-["Hunter Henry","TE",148.7,142.9,1,1.3,11,0.202],
-["Makai Lemon","WR",151.1,143.3,1,3.5,10,0.179],
-["Chris Godwin","WR",166.7,145.1,1,9.3,10,0.18],
-["Kenyon Sadiq","TE",125.3,145.3,1,28.8,13,0.144],
-["Kyler Murray","QB",266.4,147,1,15.9,6,0.383],
-["KC Concepcion","WR",153.9,147,1,0.3,11,0.117],
-["Harrison Butker","K",148.8,147.5,1,17.4,5,0],
-["Baker Mayfield","QB",264.7,148.5,1,0.1,10,0.393],
-["Eddy Pineiro","K",155.3,148.7,1,17.5,8,0],
-["New England Defense","DST",100.3,149.9,1,17.7,11,0],
-["Jordyn Tyson","WR",118.1,150,1,18.3,8,0.178],
-["Woody Marks","RB",123.4,150.8,1,4.4,8,0.17],
-["Detroit Defense","DST",107.8,152.1,1,17.9,6,0],
-["Romeo Doubs","WR",157.1,152.2,1,6.9,11,0.191],
-["De'Zhaun Stribling","WR",139,152.8,1,8.7,8,0.173],
-["Cleveland Defense","DST",104.3,153.3,1,18.1,11,0],
-["Tyler Shough","QB",276.9,153.9,1,10.8,8,0.397],
-["Jake Bates","K",145.8,154.4,1,18.2,6,0],
-["Rashid Shaheed","WR",143.9,155,1,0.5,11,0.167],
-["Zach Charbonnet","RB",122.1,155.5,1,11.9,11,0.27],
-["Daniel Jones","QB",260.3,156.1,1,6.9,13,0.419],
-["Jordan Love","QB",260.9,156.6,1,1.8,11,0.414],
-["Alvin Kamara","RB",120.8,157.2,1,3.4,8,0.174],
-["Jalen Coker","WR",138.6,157.8,1,8.5,5,0.13],
-["Tank Dell","WR",113.8,158.3,1,39.1,8,0.158],
-["Tyjae Spears","RB",135.2,158.9,1,19.3,9,0.178],
-["Sam Darnold","QB",252.1,159.4,1,9.5,11,0.42],
-["Chris Boswell","K",142.9,160,1,18.9,9,0],
-["Isiah Pacheco","RB",112.2,160.5,1,11.4,6,0.241],
-["Kansas City Defense","DST",100.4,161.1,1,19,5,0],
-["Juwan Johnson","TE",144.6,161.7,1,1,8,0.124],
-["LA Chargers Defense","DST",93.4,162.2,1,19.1,7,0],
-["Tyler Loop","K",146,162.8,1,19.2,13,0],
-["Brian Robinson Jr.","RB",89.5,163.3,1,4.5,11,0.268],
-["C.J. Stroud","QB",244.4,163.9,1,2.2,8,0.376],
-["Jerry Jeudy","WR",135.9,164.4,1,2.5,11,0.132],
-["Terrance Ferguson","TE",126.4,165,1,9.4,11,0.237],
-["Tyler Allgeier","RB",89.4,165.5,1,1.9,14,0.201],
-["Denzel Boston","WR",122.6,166.7,1,18,11,0.122],
-["Ja'Kobi Lane","WR",93,167.8,1,7.5,13,0.194],
-["Chris Rodriguez Jr.","RB",84.3,168.3,1,12.9,7,0.249],
-["Will Reichard","K",142.2,168.9,1,19.9,6,0],
-["Malik Willis","QB",253.4,169.4,1,14.3,6,0.304],
-["Fernando Mendoza","QB",186.9,170,1,20.1,13,0.353],
-["Brenton Strange","TE",137.3,171.1,1,5.2,7,0.175],
-["Tyrone Tracy Jr.","RB",86,171.7,1,19.5,8,0.174],
-["Dalton Schultz","TE",141.4,172.2,1,8.1,8,0.127],
-["Keenan Allen","WR",127,172.8,1,2.6,13,0.142],
-["Cairo Santos","K",144.4,173.3,1,20.4,10,0],
-["Calvin Ridley","WR",124.6,173.9,1,10.8,9,0.144],
-["Tre Tucker","WR",136.8,174.4,1,1.3,13,0.132],
-["Green Bay Defense","DST",90.3,175.6,1,20.7,11,0],
-["Jalen McMillan","WR",125.7,176.1,1,7.2,10,0.191],
-["Bryce Young","QB",240.3,177.8,1,2.8,5,0.412],
-["Cooper Kupp","WR",100,178.3,1,1.5,11,0.18],
-["Pat Freiermuth","TE",138,180,1,1.6,9,0.174]];
+const RAW = [["Jahmyr Gibbs","RB",366.6,1.3,1,0.9,6,0.27],
+["Bijan Robinson","RB",359.9,2.4,1,7.1,11,0.192],
+["Ja'Marr Chase","WR",333.7,4.3,1,3.2,6,0.198],
+["Puka Nacua","WR",346.5,5.3,1,7.2,11,0.182],
+["Jonathan Taylor","RB",304.0,6.2,1,12.3,13,0.257],
+["Jaxon Smith-Njigba","WR",317.4,6.3,1,9.3,11,0.161],
+["Christian McCaffrey","RB",343.9,7.7,1,2.0,8,0.236],
+["Amon-Ra St. Brown","WR",321.2,8.4,1,3.1,6,0.187],
+["James Cook III","RB",277.8,10.1,1,2.5,7,0.281],
+["CeeDee Lamb","WR",273.1,11.8,1,20.5,14,0.187],
+["De'Von Achane","RB",280.4,12.5,1,13.2,6,0.182],
+["Justin Jefferson","WR",280.2,12.6,1,14.4,6,0.15],
+["Saquon Barkley","RB",267.8,14.0,1,5.5,10,0.246],
+["Derrick Henry","RB",268.7,16.5,1,9.1,13,0.29],
+["Chase Brown","RB",268.5,17.1,1,3.2,6,0.235],
+["Omarion Hampton","RB",264.6,18.1,1,2.9,7,0.249],
+["Josh Allen","QB",368.4,19.1,1,2.2,7,0.478],
+["Drake London","WR",271.0,20.4,1,1.2,11,0.155],
+["A.J. Brown","WR",246.6,21.0,1,3.1,11,0.17],
+["Ashton Jeanty","RB",270.6,21.8,1,8.3,13,0.2],
+["Trey McBride","TE",246.3,23.0,1,4.6,14,0.146],
+["Brock Bowers","TE",247.4,23.9,1,6.5,13,0.17],
+["Kenneth Walker III","RB",265.5,24.8,1,7.6,5,0.249],
+["Nico Collins","WR",243.9,25.7,1,4.3,8,0.172],
+["Jeremiyah Love","RB",268.2,26.0,1,8.3,14,0.201],
+["George Pickens","WR",232.8,28.2,1,6.6,14,0.193],
+["Chris Olave","WR",251.8,29.4,1,1.9,8,0.167],
+["Rashee Rice","WR",251.0,29.4,1,8.3,5,0.203],
+["Javonte Williams","RB",246.4,32.7,1,13.1,14,0.292],
+["Lamar Jackson","QB",320.6,34.5,1,1.9,13,0.39],
+["Kyren Williams","RB",239.8,35.0,1,7.8,11,0.3],
+["Malik Nabers","WR",237.3,35.1,1,6.6,8,0.177],
+["Breece Hall","RB",260.0,36.0,1,14.5,13,0.208],
+["DeVonta Smith","WR",235.1,36.6,1,4.0,10,0.153],
+["Garrett Wilson","WR",247.9,37.1,1,2.4,13,0.121],
+["Travis Etienne Jr.","RB",236.8,40.6,1,9.9,8,0.19],
+["Tetairoa McMillan","WR",229.2,42.2,1,7.0,5,0.157],
+["Colston Loveland","TE",200.4,42.4,1,6.5,10,0.18],
+["Zay Flowers","WR",235.6,44.1,1,2.9,13,0.153],
+["Emeka Egbuka","WR",226.8,44.8,1,2.2,10,0.185],
+["Cam Skattebo","RB",232.4,45.1,1,5.0,8,0.219],
+["Ladd McConkey","WR",214.3,45.8,1,6.7,7,0.168],
+["Davante Adams","WR",226.7,46.1,1,5.5,11,0.278],
+["Drake Maye","QB",318.7,47.2,1,1.5,11,0.411],
+["Quinshon Judkins","RB",217.5,48.6,1,9.2,11,0.221],
+["Tee Higgins","WR",211.2,51.2,1,7.6,6,0.227],
+["D'Andre Swift","RB",217.0,51.8,1,6.5,10,0.235],
+["Tyler Warren","TE",201.1,52.0,1,9.5,13,0.164],
+["Jaylen Waddle","WR",209.9,52.2,1,3.2,10,0.172],
+["Jayden Daniels","QB",313.2,53.1,1,4.2,7,0.374],
+["Joe Burrow","QB",302.8,53.5,1,1.5,6,0.466],
+["Jalen Hurts","QB",316.8,54.7,1,3.0,10,0.458],
+["Bucky Irving","RB",211.6,56.9,1,4.5,10,0.213],
+["DJ Moore","WR",208.3,60.2,1,1.3,7,0.187],
+["Terry McLaurin","WR",206.4,60.9,1,11.8,7,0.174],
+["Bhayshul Tuten","RB",216.2,61.2,1,10.2,7,0.236],
+["David Montgomery","RB",199.8,61.6,1,0.1,8,0.24],
+["Jameson Williams","WR",214.8,64.1,1,6.2,6,0.196],
+["Rome Odunze","WR",207.6,65.3,1,6.0,10,0.217],
+["Jadarian Price","RB",189.7,66.9,1,4.4,11,0.269],
+["Kyle Pitts Sr.","TE",185.4,68.7,1,0.3,11,0.113],
+["Harold Fannin Jr.","TE",188.0,70.5,1,0.9,11,0.128],
+["Dak Prescott","QB",289.9,71.8,1,3.8,14,0.445],
+["George Kittle","TE",172.9,72.8,1,20.5,8,0.173],
+["Sam LaPorta","TE",177.2,74.1,1,11.7,6,0.169],
+["Luther Burden III","WR",204.4,74.9,1,2.5,10,0.161],
+["TreVeyon Henderson","RB",194.6,77.5,1,3.3,11,0.247],
+["Carnell Tate","WR",191.9,78.0,1,10.2,9,0.141],
+["Rhamondre Stevenson","RB",200.0,78.2,1,3.3,11,0.255],
+["Josh Jacobs","RB",141.9,78.4,1,22.5,11,0.402],
+["Marvin Harrison Jr.","WR",193.4,78.7,1,0.1,14,0.171],
+["Courtland Sutton","WR",196.9,81.4,1,7.1,10,0.228],
+["Jaxson Dart","QB",298.4,83.3,1,1.1,8,0.406],
+["Mike Evans","WR",193.3,83.8,1,13.2,8,0.202],
+["Brandon Aubrey","K",171.5,84.3,1,9.9,14,0],
+["DK Metcalf","WR",196.6,85.3,1,0.8,9,0.183],
+["Justin Herbert","QB",287.2,85.5,1,3.6,7,0.397],
+["Jaylen Warren","RB",197.7,86.5,1,3.7,9,0.182],
+["Tony Pollard","RB",191.3,87.3,1,5.8,9,0.172],
+["Christian Watson","WR",197.0,88.6,1,8.2,11,0.213],
+["Caleb Williams","QB",291.0,88.8,1,9.1,10,0.399],
+["Michael Pittman Jr.","WR",195.4,89.6,1,1.8,9,0.138],
+["Parker Washington","WR",180.3,89.7,1,6.9,7,0.166],
+["Tucker Kraft","TE",165.9,91.1,1,6.5,11,0.163],
+["Houston Defense","DST",129.1,93.0,1,11.0,8,0],
+["Matthew Stafford","QB",289.3,93.4,1,3.5,11,0.48],
+["Travis Kelce","TE",175.7,94.6,1,1.5,5,0.154],
+["Rico Dowdle","RB",177.4,95.2,1,10.9,9,0.22],
+["Denver Defense","DST",130.8,99.5,1,11.7,10,0],
+["Kenny Gainwell","RB",163.2,100.0,1,14.8,10,0.239],
+["Trevor Lawrence","QB",289.8,101.3,1,0.3,7,0.438],
+["Stefon Diggs","WR",170.9,101.8,1,2.2,7,0.14],
+["LA Rams Defense","DST",124.4,102.0,1,12.0,11,0],
+["Michael Wilson","WR",174.3,102.9,1,2.1,14,0.12],
+["Dallas Goedert","TE",166.7,103.3,1,10.2,10,0.216],
+["Bo Nix","QB",296.9,103.6,1,1.2,10,0.445],
+["Jonathon Brooks","RB",164.7,104.3,1,15.2,5,0.182],
+["Alec Pierce","WR",183.6,108.1,1,1.9,13,0.163],
+["Chuba Hubbard","RB",179.3,108.3,1,0.8,5,0.201],
+["Patrick Mahomes","QB",287.9,109.0,1,3.1,5,0.424],
+["Brock Purdy","QB",291.5,110.3,1,0.5,8,0.436],
+["Jake Ferguson","TE",163.1,111.2,1,3.5,14,0.202],
+["J.K. Dobbins","RB",174.0,111.7,1,0.8,10,0.276],
+["Cameron Dicker","K",161.9,112.6,1,13.3,7,0],
+["Wan'Dale Robinson","WR",174.7,112.9,1,0.1,9,0.086],
+["Matthew Golden","WR",171.6,113.1,1,17.4,11,0.175],
+["Seattle Defense","DST",122.2,113.4,1,13.4,11,0],
+["Brian Thomas Jr.","WR",171.9,113.7,1,4.8,7,0.174],
+["Aaron Jones Sr.","RB",163.0,114.1,1,15.0,6,0.166],
+["Jason Myers","K",158.5,115.0,1,13.6,11,0],
+["MarShawn Lloyd","RB",155.8,115.1,1,21.0,11,0.231],
+["Travis Hunter","WR",94.3,118.6,1,9.2,7,0.159],
+["Jordan Addison","WR",167.4,121.6,1,3.6,6,0.179],
+["Chris Godwin Jr.","WR",166.6,122.0,1,9.3,10,0.18],
+["Isaiah Likely","TE",150.4,122.2,1,4.7,8,0.16],
+["Jakobi Meyers","WR",175.0,122.5,1,6.9,7,0.171],
+["Pittsburgh Defense","DST",123.1,122.6,1,14.5,9,0],
+["Kyle Monangai","RB",156.4,123.8,1,18.8,10,0.211],
+["Ka'imi Fairbairn","K",157.8,124.1,1,14.6,8,0],
+["Blake Corum","RB",145.9,125.7,1,13.5,11,0.288],
+["Rachaad White","RB",166.6,125.8,1,2.3,7,0.252],
+["RJ Harvey","RB",149.7,125.8,1,0.2,10,0.241],
+["Mark Andrews","TE",165.3,126.6,1,3.8,13,0.254],
+["Quentin Johnston","WR",162.6,130.6,1,2.9,7,0.221],
+["Dalton Kincaid","TE",151.1,130.9,1,4.5,7,0.179],
+["Xavier Worthy","WR",169.1,131.1,1,4.0,5,0.195],
+["Makai Lemon","WR",151.4,132.7,1,3.8,10,0.178],
+["Baltimore Defense","DST",120.0,134.4,1,15.9,13,0],
+["Harrison Mevis","K",159.4,134.9,1,15.9,11,0],
+["Jacory Croskey-Merritt","RB",150.1,136.3,1,8.9,7,0.3],
+["Josh Downs","WR",160.2,136.5,1,2.5,13,0.131],
+["Jared Goff","QB",280.2,136.7,1,11.1,6,0.446],
+["Kyler Murray","QB",282.8,137.2,1,0.6,6,0.361],
+["Philadelphia Defense","DST",107.1,138.3,1,16.3,10,0],
+["De'Zhaun Stribling","WR",153.9,138.4,1,6.2,8,0.156],
+["Jordan Mason","RB",141.5,139.3,1,10.2,6,0.233],
+["Jayden Reed","WR",179.0,139.6,1,5.3,11,0.151],
+["Khalil Shakir","WR",172.0,140.3,1,0.7,7,0.14],
+["Cam Little","K",146.9,141.1,1,16.6,7,0],
+["Eddy Pineiro","K",155.2,141.7,1,16.7,8,0],
+["Deebo Samuel Sr.","WR",140.6,143.8,1,9.0,8,0.192],
+["Harrison Butker","K",148.8,144.2,1,17.0,5,0],
+["Baker Mayfield","QB",264.6,146.5,1,0.1,10,0.393],
+["Tyjae Spears","RB",135.1,146.9,1,19.2,9,0.178],
+["KC Concepcion","WR",154.8,147.1,1,1.2,11,0.116],
+["Romeo Doubs","WR",157.2,147.6,1,6.7,11,0.191],
+["Woody Marks","RB",125.5,151.9,1,6.4,8,0.167],
+["Tyler Shough","QB",276.7,152.4,1,11.1,8,0.398],
+["T.J. Hockenson","TE",146.4,152.8,1,12.5,6,0.123],
+["Hunter Henry","TE",148.9,153.2,1,1.5,11,0.202],
+["Zach Charbonnet","RB",122.1,153.7,1,11.9,11,0.27],
+["New England Defense","DST",100.5,154.3,1,18.2,11,0],
+["Jalen Coker","WR",138.6,154.8,1,8.5,5,0.13],
+["Jordan Love","QB",268.1,155.3,1,4.7,11,0.403],
+["Detroit Defense","DST",108.0,155.9,1,18.4,6,0],
+["Jake Bates","K",146.1,156.4,1,18.5,6,0],
+["Juwan Johnson","TE",146.2,157.0,1,0.6,8,0.123],
+["Cleveland Defense","DST",104.0,157.5,1,18.6,11,0],
+["Daniel Jones","QB",260.0,158.0,1,6.6,13,0.419],
+["Rashid Shaheed","WR",143.9,158.6,1,0.5,11,0.167],
+["Isiah Pacheco","RB",65.7,159.1,1,5.6,6,0.32],
+["Alvin Kamara","RB",108.4,159.6,1,5.0,8,0.166],
+["Sam Darnold","QB",252.1,160.2,1,9.6,11,0.42],
+["Tyler Allgeier","RB",90.0,160.7,1,2.5,14,0.2],
+["Mike Washington Jr.","RB",64.8,161.2,1,2.2,13,0.185],
+["Jalen McMillan","WR",125.7,161.8,1,7.2,10,0.191],
+["Chris Rodriguez Jr.","RB",84.6,162.3,1,12.6,7,0.248],
+["Chris Boswell","K",142.8,163.4,1,19.3,9,0],
+["Kenyon Sadiq","TE",130.9,163.9,1,15.2,13,0.16],
+["Keenan Allen","WR",126.9,164.5,1,2.7,13,0.142],
+["C.J. Stroud","QB",244.1,165.0,1,2.0,8,0.377],
+["Tyler Loop","K",145.9,165.5,1,19.5,13,0],
+["LA Chargers Defense","DST",94.8,166.1,1,19.6,7,0],
+["Jonah Coleman","RB",66.0,166.6,1,8.5,10,0.227],
+["Kansas City Defense","DST",100.4,167.1,1,19.7,5,0],
+["Dallas Defense","DST",78.1,167.7,1,19.8,14,0],
+["Malik Willis","QB",253.8,168.2,1,13.9,6,0.303],
+["Will Reichard","K",142.5,168.7,1,19.9,6,0],
+["Brenton Strange","TE",137.3,169.3,1,5.2,7,0.175],
+["Jacksonville Defense","DST",78.4,169.8,1,20.0,7,0],
+["Brian Robinson Jr.","RB",89.5,170.4,1,4.5,11,0.268],
+["Jordyn Tyson","WR",118.1,170.9,1,18.3,8,0.178],
+["Trey Smack","K",144.3,171.4,1,20.2,11,0],
+["Terrance Ferguson","TE",128.3,172.0,1,7.3,11,0.234],
+["Fernando Mendoza","QB",187.2,172.5,1,0.3,13,0.353],
+["Calvin Ridley","WR",124.6,173.0,1,10.8,9,0.145],
+["Dalton Schultz","TE",141.2,173.6,1,8.4,8,0.127],
+["Jerry Jeudy","WR",136.7,174.1,1,3.2,11,0.132],
+["Bryce Young","QB",240.6,174.6,1,2.5,5,0.411],
+["Ja'Kobi Lane","WR",97.6,175.2,1,12.1,13,0.185],
+["Justice Hill","RB",106.1,175.7,1,14.0,13,0.17],
+["Minnesota Defense","DST",74.4,176.2,1,20.8,6,0],
+["Buffalo Defense","DST",59.0,176.8,1,20.9,7,0],
+["Cairo Santos","K",144.3,177.3,1,20.9,10,0],
+["Jake Elliott","K",135.7,177.9,1,21.0,10,0],
+["San Francisco Defense","DST",83.1,178.4,1,21.1,8,0],
+["Dylan Sampson","RB",101.2,178.9,1,12.9,11,0.148],
+["Aaron Rodgers","QB",224.4,179.5,1,5.6,9,0.41],
+["Denzel Boston","WR",123.5,180.0,1,18.9,11,0.122],
+["Cam Ward","QB",223.4,180.5,1,3.8,9,0.363],
+["Evan McPherson","K",141.8,181.1,1,21.4,6,0],
+["Keaton Mitchell","RB",83.5,181.6,1,10.4,7,0.216],
+["Cooper Kupp","WR",100.0,182.1,1,1.5,11,0.18],
+["Odell Beckham Jr.","WR",24.0,182.7,1,21.6,8,0.0],
+["Tre Tucker","WR",136.8,183.2,1,1.2,13,0.132],
+["Green Bay Defense","DST",90.3,183.8,1,21.7,11,0],
+["Chicago Defense","DST",71.1,184.3,1,21.7,10,0],
+["Tyler Bass","K",137.0,185.4,1,21.9,7,0],
+["Wil Lutz","K",135.8,185.9,1,21.9,10,0],
+["Tank Bigsby","RB",63.8,186.4,1,0.2,10,0.282],
+["Pat Freiermuth","TE",137.9,188.6,1,1.6,9,0.174],
+["David Njoku","TE",102.1,189.1,1,2.2,7,0.176],
+["AJ Barner","TE",121.1,191.8,1,7.3,11,0.198],
+["Cyrus Allen","WR",60.1,194.5,1,7.4,5,0.2],
+["Emmett Johnson","RB",61.5,202.0,1,7.6,5,0.195],
+["Jacoby Brissett","QB",212.1,204.1,1,13.6,14,0.349],
+["Tennessee Defense","DST",68.4,205.7,1,24.3,9,0]];
 
 /* ---- LEAGUE CONFIG ----
    ESPN "Sparkling Wiggles": 12 teams, snake, 15 rounds, full PPR, 2 flex.
@@ -826,7 +852,7 @@ const RAW = [["Jahmyr Gibbs","RB",366.1,1.5,1,1.3,6,0.27],
    everything downstream (pick slate, K/DST rounds, lookahead horizon, sim seat)
    derives from it, so there is exactly one number to change on draft night. */
 const TEAMS = 12, N_ROUNDS = 15;
-let MY_SEAT = 10;                    // <-- TBD: set to the assigned slot
+let MY_SEAT = 2;                     // assigned by LM, Sep 4 2026
 function picksFor(seat){
   const o=[];
   for(let r=1;r<=N_ROUNDS;r++){
@@ -914,7 +940,10 @@ let FLEX_N = 2;   // ESPN league: 2 flex. Fixed -- the mock toggle was removed.
 const CAP={QB:2,RB:6,WR:6,TE:2,K:1,DST:1};
 
 const REPL_BY_FLEX = {
-  /* ---- ESPN full-PPR replacement levels (recomputed 8/23) ----
+  /* ---- ESPN full-PPR replacement levels (recomputed 8/23, refreshed 9/4) ----
+     9/4 refresh, same ranks: QB17 280.2 / RB33 164.7 / WR35 183.6 / TE15 150.4 / K4 158.5 / DST7 108.0.
+     RB fell 174.1 -> 164.7: Jacobs (exempt list) and Pacheco (IR) dropped out of the top 33.
+     The 8/23 values in the note below are kept for the audit trail.
      Carried over the Yahoo tool's positional RANKS, not its point values, since the
      full-PPR scale is entirely different. Yahoo's levels sat at QB17 / RB33 / WR35 /
      TE15 / K4 / DST7; the same ranks re-read against the blended ESPN dataset give the
@@ -931,7 +960,7 @@ const REPL_BY_FLEX = {
      CRITICAL: these MUST NOT be reverted to the Yahoo numbers. Josh Allen projects 369.7
      here -- the highest raw total in the dataset, above Gibbs -- so a stale REPL.QB pulls
      the QB pick into round 1. */
-  2:{QB:276.9, RB:174.1, WR:184.2, TE:150.6, K:158.5, DST:107.8},
+  2:{QB:280.2, RB:164.7, WR:183.6, TE:150.4, K:158.5, DST:108.0},
   /* 1-flex: fewer RB/WR/TE starters league-wide, so replacement sits shallower.
      Same construction, ranks pulled in by one flex slot per team (12 fewer starters). */
   1:{QB:276.9, RB:186.1, WR:196.0, TE:158.2, K:158.5, DST:107.8}
@@ -1012,7 +1041,7 @@ function lineup(ids){
   take('QB',1); take('RB',2); take('WR',2); take('TE',1);
   /* FLEX is RB/WR/TE only. This used to filter on `p.pos!=='QB' && p.pts>0`, which
      relied on K/DST having no projection -- but in this build they do (K 142-172,
-     DST 90-131). Because the flex bar here is max(REPL.RB,REPL.WR)=184.2 and every
+     DST 90-131). Because the flex bar here is max(REPL.RB,REPL.WR)=183.6 and every
      K/DST sits BELOW it, a rostered kicker or defense actively LOWERED the lineup:
      drafting your mandatory K+DST cost -65.6, a bad DST alone -93.9. That contaminated
      lineup() and therefore playOut(), expectedAt(), the roster grade and the sim.
@@ -1611,8 +1640,8 @@ function benchValueHTML(list){
 
      Why: you start exactly one TE. Your second TE is not competing against TE15
      off waivers -- he is competing against your WR/RB bench for a FLEX slot, and
-     that fight is decided on raw points. But the TE replacement bar (150.6) sits
-     33.6 below the WR bar (184.2), so a TE collects a 33.6-point head start he
+     that fight is decided on raw points. But the TE replacement bar (150.4) sits
+     33.2 below the WR bar (183.6), so a TE collects a 33.6-point head start he
      cannot actually spend. Concretely: Mark Andrews (165.4 pts) rates +14.8 VORP
      while Kenny Gainwell (177.8 pts -- 12.4 MORE real points) rates +3.7.
 
@@ -1792,15 +1821,15 @@ function renderRec(){
 }
 
 const ROUNDS=[
- [1,MY_PICKS[0],'Best RB or WR','The biggest edge on the board \u2014 the top pick beats the runner-up by about 30 points of starting lineup, more than any later round. Measured over 40 boards it takes an RB 58% of the time and a WR 43%. Never a QB or TE here.'],
- [2,MY_PICKS[1],'Best RB or WR','Almost always a running back (88% of boards). The elite-RB tier runs out faster than the WR tier, so this is where the model spends its second premium pick. The gap to the next-best option has already narrowed to ~7 points.'],
- [3,MY_PICKS[2],'Wide receiver','The balanced-open guard fires here. If you hold two RBs and fewer than two WRs it steers to WR (75% of boards) unless a genuinely elite player at another position fell. Measured: the 2RB-2WR open buys +243 points of WR at zero RB cost \u2014 the third back was heading to your bench anyway.'],
- [4,MY_PICKS[3],'Wide receiver','Second half of the guard. You should leave round 4 with two backs and two receivers. Note the edge over the #2 option is essentially zero by now \u2014 this is a structural pick, not a value pick, and reasonable people could take either name.'],
- [5,MY_PICKS[4],'Tight end (or QB)','TE 73% / QB 23%. Bowers and McBride are a real tier of two \u2014 45 points clear of TE3 \u2014 and in full PPR that gap is worth reaching for. If both are gone this usually becomes the QB pick instead.'],
- [6,MY_PICKS[5],'Best available','Core spots are filled, so take the best player left \u2014 most often a third RB for the flex (63%). The model does not chase a second QB.'],
- [7,MY_PICKS[6],'Quarterback','This is the QB round in this league (65% of boards), later than a half-PPR build would suggest. Two reasons: the \u22122 interception penalty suppresses the whole position, and full PPR raises the WR/TE bar you would give up. Josh Allen is the one exception \u2014 he is 46 points clear of QB2, and if he somehow slides the model grabs him far earlier.'],
- [8,MY_PICKS[7],'Depth / flex','Last pick that still moves your starting lineup. The edge over the next option is under a point, so trust your own read here.'],
- ['9\u201315',MY_PICKS[8]+'+','No opinion \u2014 your call','From here the spread between the best and worst candidate is exactly 0.0: nothing left changes your starters. The card switches to \u201cno opinion\u201d mode and shows your thinnest positions instead. Take upside, handcuff your RB1, or stash a bye-week fill.'],
+ [1,MY_PICKS[0],'Gibbs, or Bijan','You pick second. Gibbs and Bijan are RB1 and RB2 on both sources, a hair apart, and one of them is there \u2014 the tool took Gibbs on 39 of 40 boards, Bijan when Gibbs went first. Never a QB, WR or TE here: the next pick is 21 slots away and the elite RBs are gone by then.'],
+ [2,MY_PICKS[1],'Best RB (or Bowers)','Running back 73% of the time \u2014 Love, Walker, Jeanty, Chase Brown, whoever the ADP noise leaves at 23. The other 28% is Brock Bowers falling past his ADP of 23.9; when he is on the board here the tool takes him and gets the second RB at 26 instead. Edge over the alternative is ~0: the names are interchangeable, the composition is not.'],
+ [3,MY_PICKS[2],'Elite tight end','Bowers or McBride, 55% of boards (both are usually gone by 26 only when someone reached). They are a tier of two, 45 points clear of TE3, and this is the elite-faller hatch overriding the balanced-open guard on purpose \u2014 measured, it is worth about +10 points of lineup vs. forcing a WR here. If both TEs are gone this becomes the WR pick (Olave, London) and the guard resumes.'],
+ [4,MY_PICKS[3],'Wide receiver','The balanced-open guard fires on 40 of 40 boards. You should leave round 4 with two backs, a tight end and a receiver \u2014 or, if the TEs were gone, two and two. Edge over the #2 name is zero: structural pick, take the receiver you like from the tier.'],
+ [5,MY_PICKS[4],'Quarterback','QB on 75% of boards, Drake Maye most often. Pick 50 is followed by a 21-pick wait, and QB2\u2013QB8 (24-point band) empties during it. The other 25% is a third RB when the QB band has already gone \u2014 the QB then comes at 71 or 74.'],
+ [6,MY_PICKS[5],'Second receiver / RB','Core spots are filled. WR 53%, RB 33%: this is where the second starting receiver usually arrives if the guard only got you one. Edge over the alternative is 0.0 \u2014 trust the tier, not the name.'],
+ [7,MY_PICKS[6],'Running back','RB 88%. Third back for the flex; the model does not chase a second QB or TE here.'],
+ [8,MY_PICKS[7],'Receiver depth','WR 88%. Last pick that still nudges the starting lineup, and only barely.'],
+ ['9\u201315',MY_PICKS[8]+'+','No opinion \u2014 your call','From here the spread between the best and worst candidate is 0.0: nothing left changes your starters. The card switches to \u201cno opinion\u201d mode and shows your thinnest positions. The tool leans WR in rounds 10 and 12 and takes a TE2 around 11 as bye cover. Take upside, handcuff your RB1, or stash a bye-week fill.'],
  [14,LAST_TWO[0],'Kicker','Available every year. Costs nothing here.'],
  [15,LAST_TWO[1],'Defense','Stream matchups all season. This league scores \u22123 for 35\u201345 and \u22125 for 46+ allowed, plus tiered yards-allowed \u2014 which rewards streaming a mediocre defense into a bad offense more than rostering a good one.']];
 function renderRounds(){
@@ -2387,10 +2416,10 @@ if(qqEl){
 
 document.getElementById('assumptions').innerHTML=
  `<b>How the call is made.</b> Every projection is scored in this league's settings — 1.0 per reception, 4-point passing TDs, \u22122 interceptions, 6-point rushing and receiving TDs, 10 yards per point, \u22122 fumbles. For each available player it adds him to your roster, searches your next three picks exhaustively, and scores the resulting QB/RB/RB/WR/WR/TE/FLEX/FLEX lineup.
-  <br><br><b>Assumptions you can check.</b> Replacement level \u2014 the player you'd get free off waivers \u2014 is QB17 (276.9), RB33 (174.1), WR35 (184.2), TE15 (150.6). These are recomputed for full PPR and are much higher than a half-PPR league's: a point per catch lifts every pass-catcher, so the bar to beat is higher too. Availability at future picks uses each player's ADP with the spread inflated 2.2\u00d7, because raw source-disagreement is far tighter than a real draft room.
-  <br><br><b>Coverage.</b> 192 players. 164 carry a genuine two-source blend \u2014 FFToday's PPR projections and ESPN's own 2026 projections rendered at this league's settings \u2014 and the gap between those two sources is what drives the availability model. The remaining 28 appear in only one source and fall back to an ADP-scaled spread. Kickers and defenses come from ESPN alone, since FFToday's scoring rules for those positions don't match this league's tiered points-allowed and yards-allowed.
-  <br><br><b>What this league changes.</b> Full PPR moves receivers and tight ends up relative to a half-PPR league, and the \u22122 interception penalty pushes quarterbacks down. On a clean board the model now takes its QB around round 7 rather than round 5. Defense scoring here is wider than it looks: an elite unit beats a streamer by about 22% more than in a half-PPR league, but that shows up in weekly streaming, not on draft day \u2014 K and DST are still last-two picks.
-  <br><br><b>Data vintage.</b> FFToday PPR and ESPN projections pulled 8/23/2026; ESPN ADP 8/23/2026. Camp news after that date is not reflected.`;
+  <br><br><b>Assumptions you can check.</b> Replacement level \u2014 the player you'd get free off waivers \u2014 is QB17 (280.2), RB33 (164.7), WR35 (183.6), TE15 (150.4). These are recomputed for full PPR and are much higher than a half-PPR league's: a point per catch lifts every pass-catcher, so the bar to beat is higher too. Availability at future picks uses each player's ADP with the spread inflated 2.2\u00d7, because raw source-disagreement is far tighter than a real draft room.
+  <br><br><b>Coverage.</b> 217 players \u2014 every player on ESPN's 9/4 draft-trends board who has a live ESPN projection. 178 carry a genuine two-source blend \u2014 FFToday's PPR projections and ESPN's own 2026 projections rendered at this league's settings \u2014 and the gap between those two sources is what drives the availability model. The remaining 39 appear in only one source and fall back to an ADP-scaled spread. Kickers and defenses come from ESPN alone, since FFToday's scoring rules for those positions don't match this league's tiered points-allowed and yards-allowed.
+  <br><br><b>What this league changes.</b> Full PPR moves receivers and tight ends up relative to a half-PPR league, and the \u22122 interception penalty pushes quarterbacks down. From seat 2 the model takes its QB at pick 50 (round 5) and the elite TE at 26; from a middle seat both would come later. Defense scoring here is wider than it looks: an elite unit beats a streamer by about 22% more than in a half-PPR league, but that shows up in weekly streaming, not on draft day \u2014 K and DST are still last-two picks.
+  <br><br><b>Data vintage.</b> FFToday projections updated 9/3/2026; ESPN projections and ADP pulled 9/4/2026 \u2014 after final cuts. Josh Jacobs (exempt list) and the Pacheco / Tank Dell / Jordyn Tyson IR moves are reflected.`;
 
 renderRounds();
 /* The 1-flex Yahoo-mock toggle was removed: this file is ESPN-only, and a mis-set
